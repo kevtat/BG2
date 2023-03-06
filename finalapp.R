@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 library(plotly)
 library(ggplot2)
+library(shinythemes)
 
 data <- read_delim("world_population_df.csv")
 
@@ -16,9 +17,9 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                           p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, 2022."),
                             "The purpose of our project is to examine trends or patterns in different continents in order to grasp how different
                             social, economic, and cultural differences contributed to a region's growth rate over the majority of the 21st century.
-                            Our dataset, which we gathered from",strong(a("Kaggle", href = "https://www.kaggle.com/datasets/iamsouravbanerjee/world-population-dataset")
-                            )
-                          ),
+                            Our dataset, which we gathered from",strong(a("Kaggle.", href = "https://www.kaggle.com/datasets/iamsouravbanerjee/world-population-dataset")),
+                            "With this dataset, we were also able to ovserve trends in density by area for both the different countries and continents. Additionally,
+                            we observed current growth rate statistics for the world's population. Below is a map we plotted using the pakages ggplot, and tidyverse."),
                           plotOutput("wPlot")
                  ),
                  tabPanel("Population Trend",
@@ -55,7 +56,7 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                           )    
                  ),
                  
-                 tabPanel("Distribution of population",
+                 tabPanel("Distribution of Population",
                           sidebarLayout(
                             
                             # Sidebar panel for inputs ----
@@ -73,6 +74,7 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                  tabPanel("Summary",
                           tableOutput("density_by_area"),
                  ),
+                 theme = shinytheme("cerulean"),
 )
 
 # Define server logic required to draw a histogram
@@ -99,17 +101,18 @@ server <- function (input, output) {
     pop %>% 
       filter(Country==input$country) %>%
       ggplot(aes(x=year, y=pop)) +
-      geom_line() + geom_point() +
+      geom_line(color="cornflowerblue") + geom_point(color="cornflowerblue") +
       labs(x="Year", y="Population", title=paste0("Population in ", input$country))
   })
   
   
   output$plot2<- renderPlotly({
-    data %>% filter(Continent==input$continent) %>%
+    data %>% 
+      filter(Continent==input$continent) %>%
       arrange(desc(population_2022)) %>% head(10) %>%
       ggplot(aes(x=reorder(Country,population_2022) , y=population_2022)) +
       geom_col(fill="cornflowerblue") +
-      labs(x="Country", y="Population", title=paste0("Top 10 countries by population in ", input$continent)) +
+      labs(x="Country", y="Population", title=paste0("Top 10 Countries by Population in ", input$continent)) +
       coord_flip()
   })
   
@@ -120,7 +123,7 @@ server <- function (input, output) {
       summarise(pop=sum(pop))
     fig <- plot_ly(df, labels = ~Continent, values = ~pop, type = 'pie')
     fig <- fig %>% 
-      layout(title = 'Distribution of population in each continent',
+      layout(title = 'Distribution of Population in Each Continent',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     fig
