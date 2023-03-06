@@ -1,0 +1,138 @@
+library(shiny)
+library(tidyverse)
+library(plotly)
+library(ggplot2)
+
+data <- read_delim("world_population_df.csv")
+
+pop <- data %>% 
+  select(Country, Continent, population_2022:population_2000) %>%
+  pivot_longer(col=population_2022:population_2000, names_to="year", values_to="pop")  %>%
+  mutate(year=as.numeric(str_extract(year, "\\d+")))
+
+ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population",
+                 tabPanel("Overview",
+                          h1(strong("World Population Trends from 200-2022")),
+                          p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, 2022."),
+                            "The purpose of our project is to examine trends or patterns in different continents in order to grasp how different
+                            social, economic, and cultural differences contributed to a region's growth rate over the majority of the 21st century.
+                            Our dataset, which we gathered from",strong(a("Kaggle", href = "https://www.kaggle.com/datasets/iamsouravbanerjee/world-population-dataset")
+                            )
+                          ),
+                          plotOutput("wPlot")
+                 ),
+                 tabPanel("Population Trend",
+                          sidebarLayout(
+                            
+                            # Sidebar panel for inputs
+                            sidebarPanel(
+                              selectInput("country", "Select country:", 
+                                          choices = unique(pop$Country), selected = "China")
+                            ),
+                            
+                            # Main panel for displaying outputs
+                            mainPanel(
+                              plotlyOutput(outputId = "plot1")
+                              
+                            )
+                          )    
+                 ),
+                 
+                 tabPanel("Top 10 Countries by Population",
+                          sidebarLayout(
+                            
+                            # Sidebar panel for inputs ----
+                            sidebarPanel(
+                              selectInput("continent", "Select continent:", 
+                                          choices = unique(data$Continent), selected = "Asia")
+                              
+                            ),
+                            
+                            # Main panel for displaying outputs ----
+                            mainPanel(
+                              plotlyOutput(outputId = "plot2")
+                            )
+                          )    
+                 ),
+                 
+                 tabPanel("Distribution of population",
+                          sidebarLayout(
+                            
+                            # Sidebar panel for inputs ----
+                            sidebarPanel(
+                              
+                              selectInput("year", "Select year", choices = unique(pop$year), selected = 2010)
+                            ),
+                            
+                            # Main panel for displaying outputs ----
+                            mainPanel(
+                              plotlyOutput("plot3") 
+                            )
+                          )    
+                 ),
+                 tabPanel("Summary",
+                          tableOutput("density_by_area"),
+                 ),
+)
+
+# Define server logic required to draw a histogram
+server <- function (input, output) {
+    output$wPlot <- renderPlot({
+      md <- map_data("world") %>% 
+        select(long, lat,region, group) %>% 
+        add_row(region = "United States") %>% 
+        rename(Country = region)
+      mapdata <- right_join(md, data, by ="Country")
+      combineddata<-mapdata %>% 
+        filter(!is.na(mapdata$Growth_Rate))
+      
+      
+      x <-ggplot(combineddata, aes( x = long, y = lat, group=group, )) +
+        geom_polygon(aes(fill = Growth_Rate), color = "black")
+      y <- x + scale_fill_gradient(name = "Growth Rate", low = "khaki1", high =  "lightblue1")+
+        theme(axis.title=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank())
+      y
+    })
+  output$plot1 <- renderPlotly({
+    pop %>% 
+      filter(Country==input$country) %>%
+      ggplot(aes(x=year, y=pop)) +
+      geom_line() + geom_point() +
+      labs(x="Year", y="Population", title=paste0("Population in ", input$country))
+  })
+  
+  
+  output$plot2<- renderPlotly({
+    data %>% filter(Continent==input$continent) %>%
+      arrange(desc(population_2022)) %>% head(10) %>%
+      ggplot(aes(x=reorder(Country,population_2022) , y=population_2022)) +
+      geom_col(fill="cornflowerblue") +
+      labs(x="Country", y="Population", title=paste0("Top 10 countries by population in ", input$continent)) +
+      coord_flip()
+  })
+  
+  output$plot3 <- renderPlotly({
+    df <- pop %>% 
+      filter(year==input$year) %>%
+      group_by(Continent) %>% 
+      summarise(pop=sum(pop))
+    fig <- plot_ly(df, labels = ~Continent, values = ~pop, type = 'pie')
+    fig <- fig %>% 
+      layout(title = 'Distribution of population in each continent',
+             xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+             yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    fig
+  })
+  
+  output$density_by_area <- renderTable({
+    data %>% 
+      group_by(Country) %>% 
+      summarize(Area_in_km = sum(Area), Density_in_km = mean(Density)) %>%
+      arrange(desc(Area_in_km)) %>% 
+      head(10)
+  })
+}
+# Create Shiny app ----
+shinyApp(ui = ui, server = server)
