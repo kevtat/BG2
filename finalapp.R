@@ -13,7 +13,7 @@ pop <- data %>%
 
 ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population",
                  tabPanel("Overview",
-                          h2(strong("World Population Trends from 200-2022")),
+                          h2(strong("World Population Trends from (2000-2022)")),
                           p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, 2022."),
                             "The purpose of our project is to examine trends or patterns in different continents in order to grasp how different
                             social, economic, and cultural differences contributed to a region's growth rate over the majority of the 21st century.
@@ -78,7 +78,22 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                           )    
                  ),
                  tabPanel("Summary",
-                          tableOutput("density_by_area"),
+                            h2(strong("Our Findings/Analysis")),
+                            p("According to our endeavors, one can observe that the world population continues to rise over the past 20 years.
+                              Looking through the scope of the population growth rate as demonstrated earlier in the web app, one can quickly 
+                              conclude that almost all countries in the world are showing positive population growth. We can attribute this 
+                              positive population growth to the rapid modernization over the past 20 years. This is especially salient in 
+                              African countries due to their accelerated socio-economic growth. Overall, the quality of this dataset was 
+                              excellent for the most part--- with a few poorly named columns that we have to revise. Nonetheless, this 
+                              dataset is unbiased and would not harm certain population groups. In the future, we hope to find a replacement 
+                              for the ggplot2 world map due to the missing values that it has. We could also incorporate a dataset that 
+                              includes facets such as GDP, GDP per capita, and GDP growth, to fully visualize the socioeconomic advancements 
+                              that the world has experienced over the last 20 years "),
+                          splitLayout(
+                            tableOutput("density_by_area"),
+                            img(src = "https://nouvelles.umontreal.ca/fileadmin/_processed_/csm_20230125_demographique_8M_df2b84274b.jpg", width = "562px", height = "375px")
+                          )
+                            
                  ),
                  theme = shinytheme("cerulean"),
 )
@@ -87,22 +102,12 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
 # Define server logic required to draw a histogram
 server <- function (input, output) {
     output$wPlot <- renderPlot({
-      md <- map_data("world") %>% 
-        select(long, lat,region, group) %>% 
-        add_row(region = "United States") %>% 
-        rename(Country = region)
-      mapdata <- right_join(md, data, by ="Country")
-      combineddata<-mapdata %>% 
-        filter(!is.na(mapdata$Growth_Rate))
+      world_map = map_data("world")
       
-      
-      x <-ggplot(combineddata, aes( x = long, y = lat, group=group, )) +
-        geom_polygon(aes(fill = Growth_Rate), color = "black")
-      y <- x + scale_fill_gradient(name = "Growth Rate", low = "khaki1", high =  "lightblue1")+
-        theme(axis.title=element_blank(),
-              axis.text=element_blank(),
-              axis.ticks=element_blank())
-      y
+      distinct(world_map, region) %>% 
+        ggplot(aes(map_id = region)) +
+        geom_map(map = world_map, fill = "cornflowerblue", color="white") +
+        expand_limits(x = world_map$long, y = world_map$lat)
     })
     output$plot1 <- renderPlotly({
       pop %>% 
@@ -111,11 +116,13 @@ server <- function (input, output) {
         geom_line(color="cornflowerblue") + geom_point(color="cornflowerblue") +
         labs(x="Year", y="Population", title=paste0("Population in ", input$country))
     })
+    
     output$avg_pop <- renderTable({
       pop %>% 
         filter(Country==input$country) %>%
-        summarize(average_pop_size_over_22_years = mean(pop)) 
-    })
+        group_by(year) %>%
+        reframe(year_change = pop[year == 2022] - pop[year == 2000])
+    }, digits = 0)
   
   output$plot2<- renderPlotly({
     data %>% 
