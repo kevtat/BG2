@@ -13,13 +13,16 @@ pop <- data %>%
 
 ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population",
                  tabPanel("Overview",
-                          h1(strong("World Population Trends from 200-2022")),
+                          h2(strong("World Population Trends from 200-2022")),
                           p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, 2022."),
                             "The purpose of our project is to examine trends or patterns in different continents in order to grasp how different
                             social, economic, and cultural differences contributed to a region's growth rate over the majority of the 21st century.
                             Our dataset, which we gathered from",strong(a("Kaggle.", href = "https://www.kaggle.com/datasets/iamsouravbanerjee/world-population-dataset")),
                             "With this dataset, we were also able to ovserve trends in density by area for both the different countries and continents. Additionally,
                             we observed current growth rate statistics for the world's population. Below is a map we plotted using the pakages ggplot, and tidyverse."),
+                          h2(strong("Why We Chose These Data")),
+                          p("The importance of studying world population is that population is a factor into other variables like the quality of life, growth rates, and 
+                            social changes. It will also allow us to make insightful prediction on future changes of growth rate and population for each individual country."),
                           plotOutput("wPlot")
                  ),
                  tabPanel("Population Trend",
@@ -28,7 +31,8 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                             # Sidebar panel for inputs
                             sidebarPanel(
                               selectInput("country", "Select country:", 
-                                          choices = unique(pop$Country), selected = "China")
+                                          choices = unique(pop$Country), selected = "China"),
+                              tableOutput("avg_pop")
                             ),
                             
                             # Main panel for displaying outputs
@@ -45,13 +49,14 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                             # Sidebar panel for inputs ----
                             sidebarPanel(
                               selectInput("continent", "Select continent:", 
-                                          choices = unique(data$Continent), selected = "Asia")
-                              
+                                          choices = unique(data$Continent), selected = "Asia"),
+                              tableOutput("growth_rate")
                             ),
+                            
                             
                             # Main panel for displaying outputs ----
                             mainPanel(
-                              plotlyOutput(outputId = "plot2")
+                              plotlyOutput(outputId = "plot2"),
                             )
                           )    
                  ),
@@ -62,12 +67,13 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                             # Sidebar panel for inputs ----
                             sidebarPanel(
                               
-                              selectInput("year", "Select year", choices = unique(pop$year), selected = 2010)
+                              selectInput("year", "Select year", 
+                                          choices = unique(pop$year), selected = 2000)
                             ),
                             
                             # Main panel for displaying outputs ----
                             mainPanel(
-                              plotlyOutput("plot3") 
+                              plotlyOutput("plot3"),
                             )
                           )    
                  ),
@@ -76,6 +82,7 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                  ),
                  theme = shinytheme("cerulean"),
 )
+
 
 # Define server logic required to draw a histogram
 server <- function (input, output) {
@@ -97,14 +104,18 @@ server <- function (input, output) {
               axis.ticks=element_blank())
       y
     })
-  output$plot1 <- renderPlotly({
-    pop %>% 
-      filter(Country==input$country) %>%
-      ggplot(aes(x=year, y=pop)) +
-      geom_line(color="cornflowerblue") + geom_point(color="cornflowerblue") +
-      labs(x="Year", y="Population", title=paste0("Population in ", input$country))
-  })
-  
+    output$plot1 <- renderPlotly({
+      pop %>% 
+        filter(Country==input$country) %>%
+        ggplot(aes(x=year, y=pop)) +
+        geom_line(color="cornflowerblue") + geom_point(color="cornflowerblue") +
+        labs(x="Year", y="Population", title=paste0("Population in ", input$country))
+    })
+    output$avg_pop <- renderTable({
+      pop %>% 
+        filter(Country==input$country) %>%
+        summarize(average_pop_size_over_22_years = mean(pop)) 
+    })
   
   output$plot2<- renderPlotly({
     data %>% 
@@ -112,9 +123,18 @@ server <- function (input, output) {
       arrange(desc(population_2022)) %>% head(10) %>%
       ggplot(aes(x=reorder(Country,population_2022) , y=population_2022)) +
       geom_col(fill="cornflowerblue") +
-      labs(x="Country", y="Population", title=paste0("Top 10 Countries by Population in ", input$continent)) +
+      labs(x="Country", y="Population", title=paste0("Top 10 Countries by Population in ",input$continent," (2022)")) +
+      theme(axis.title.y=element_blank()) +
       coord_flip()
   })
+  
+  output$growth_rate <- renderTable({
+    data %>% 
+      filter(Continent==input$continent) %>%
+      arrange(desc(Growth_Rate)) %>% 
+      select(Country, Growth_Rate) %>% 
+      head(10)
+  }, digits = 4)
   
   output$plot3 <- renderPlotly({
     df <- pop %>% 
