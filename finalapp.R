@@ -3,6 +3,7 @@ library(tidyverse)
 library(plotly)
 library(ggplot2)
 library(shinythemes)
+library(maps)
 
 data <- read_delim("world_population_df.csv")
 
@@ -15,7 +16,7 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                  tabPanel("Overview",
                           h1(strong("World Population Trends (2000-2022)")),
                  splitLayout(
-                   img(src = "csm_20230125_demographique_8M_df2b84274b.jpeg", width = "562px", height = "375px"),
+                   img(src = "https://nouvelles.umontreal.ca/fileadmin/_processed_/csm_20230125_demographique_8M_df2b84274b.jpg", width = "562px", height = "375px"),
                    div(
                      h3(strong("Applying Our Data")),
                      p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, and 2022."),
