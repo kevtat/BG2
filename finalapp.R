@@ -21,65 +21,65 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                             "With this dataset, we were also able to ovserve trends in density by area for both the different countries and continents. Additionally,
                             we observed current growth rate statistics for the world's population. Below is a map we plotted using the pakages ggplot, and tidyverse."),
                           h2(strong("Why We Chose These Data")),
-                          p("The importance of studying world population is that population is a factor into other variables like the quality of life, growth rates, and 
+                 p("The importance of studying world population is that population is a factor into other variables like the quality of life, growth rates, and 
                             social changes. It will also allow us to make insightful prediction on future changes of growth rate and population for each individual country."),
-                          plotOutput("wPlot")
-                 ),
-                 tabPanel("Population Trend",
-                          sidebarLayout(
-                            
-                            # Sidebar panel for inputs
-                            sidebarPanel(
-                              selectInput("country", "Select country:", 
-                                          choices = unique(pop$Country), selected = "China"),
-                              tableOutput("avg_pop")
-                            ),
-                            
-                            # Main panel for displaying outputs
-                            mainPanel(
-                              plotlyOutput(outputId = "plot1")
-                              
-                            )
-                          )    
-                 ),
-                 
-                 tabPanel("Top 10 Countries by Population",
-                          sidebarLayout(
-                            
-                            # Sidebar panel for inputs ----
-                            sidebarPanel(
-                              selectInput("continent", "Select continent:", 
-                                          choices = unique(data$Continent), selected = "Asia"),
-                              tableOutput("growth_rate")
-                            ),
-                            
-                            
-                            # Main panel for displaying outputs ----
-                            mainPanel(
-                              plotlyOutput(outputId = "plot2"),
-                            )
-                          )    
-                 ),
-                 
-                 tabPanel("Distribution of Population",
-                          sidebarLayout(
-                            
-                            # Sidebar panel for inputs ----
-                            sidebarPanel(
-                              
-                              selectInput("year", "Select year", 
-                                          choices = unique(pop$year), selected = 2000)
-                            ),
-                            
-                            # Main panel for displaying outputs ----
-                            mainPanel(
-                              plotlyOutput("plot3"),
-                            )
-                          )    
-                 ),
-                 tabPanel("Summary",
-                            h2(strong("Our Findings/Analysis")),
-                            p("According to our endeavors, one can observe that the world population continues to rise over the past 20 years.
+                 plotOutput("wPlot")
+),
+tabPanel("Population Trend",
+         sidebarLayout(
+           
+           # Sidebar panel for inputs
+           sidebarPanel(
+             selectInput("country", "Select country:", 
+                         choices = unique(pop$Country), selected = "China"),
+             tableOutput("avg_pop")
+           ),
+           
+           # Main panel for displaying outputs
+           mainPanel(
+             plotlyOutput(outputId = "plot1")
+             
+           )
+         )    
+),
+
+tabPanel("Top 10 Countries by Population",
+         sidebarLayout(
+           
+           # Sidebar panel for inputs ----
+           sidebarPanel(
+             selectInput("continent", "Select continent:", 
+                         choices = unique(data$Continent), selected = "Asia"),
+             tableOutput("growth_rate")
+           ),
+           
+           
+           # Main panel for displaying outputs ----
+           mainPanel(
+             plotlyOutput(outputId = "plot2"),
+           )
+         )    
+),
+
+tabPanel("Distribution of Population",
+         sidebarLayout(
+           
+           # Sidebar panel for inputs ----
+           sidebarPanel(
+             
+             selectInput("year", "Select year", 
+                         choices = unique(pop$year), selected = 2000)
+           ),
+           
+           # Main panel for displaying outputs ----
+           mainPanel(
+             plotlyOutput("plot3"),
+           )
+         )    
+),
+tabPanel("Summary",
+         h2(strong("Our Findings/Analysis")),
+         p("According to our endeavors, one can observe that the world population continues to rise over the past 20 years.
                               Looking through the scope of the population growth rate as demonstrated earlier in the web app, one can quickly 
                               conclude that almost all countries in the world are showing positive population growth. We can attribute this 
                               positive population growth to the rapid modernization over the past 20 years. This is especially salient in 
@@ -89,40 +89,48 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                               for the ggplot2 world map due to the missing values that it has. We could also incorporate a dataset that 
                               includes facets such as GDP, GDP per capita, and GDP growth, to fully visualize the socioeconomic advancements 
                               that the world has experienced over the last 20 years "),
-                          splitLayout(
-                            tableOutput("density_by_area"),
-                            img(src = "https://nouvelles.umontreal.ca/fileadmin/_processed_/csm_20230125_demographique_8M_df2b84274b.jpg", width = "562px", height = "375px")
-                          )
-                            
-                 ),
-                 theme = shinytheme("cerulean"),
+         splitLayout(
+           tableOutput("density_by_area"),
+           img(src = "https://nouvelles.umontreal.ca/fileadmin/_processed_/csm_20230125_demographique_8M_df2b84274b.jpg", width = "562px", height = "375px")
+         )
+         
+),
+theme = shinytheme("lumen"),
 )
 
 
 # Define server logic required to draw a histogram
 server <- function (input, output) {
-    output$wPlot <- renderPlot({
-      world_map = map_data("world")
-      
-      distinct(world_map, region) %>% 
-        ggplot(aes(map_id = region)) +
-        geom_map(map = world_map, fill = "cornflowerblue", color="white") +
-        expand_limits(x = world_map$long, y = world_map$lat)
-    })
-    output$plot1 <- renderPlotly({
-      pop %>% 
-        filter(Country==input$country) %>%
-        ggplot(aes(x=year, y=pop)) +
-        geom_line(color="cornflowerblue") + geom_point(color="cornflowerblue") +
-        labs(x="Year", y="Population", title=paste0("Population in ", input$country))
-    })
+  output$wPlot <- renderPlot({
+    data$Country <- recode(data$Country,'United States' = 'USA',
+                           'United Kingdom' = 'UK', 
+                           'DR Congo' = 'Democratic Republic of the Congo',
+                           'Republic of the Congo' = 'Republic of Congo')
+    world_map <- map_data("world") %>% 
+      rename(Country = region)
+    new_map <- full_join(world_map, data, by = "Country")
+    ggplot(new_map, aes(long, lat, group = group)) +
+      geom_polygon(aes(fill = Growth_Rate), color="cornflowerblue") +
+      scale_fill_viridis_c(option = "C") +
+      theme(axis.title=element_blank(),
+            axis.text=element_blank(),
+            axis.ticks=element_blank())
     
-    output$avg_pop <- renderTable({
-      pop %>% 
-        filter(Country==input$country) %>%
-        group_by(year) %>%
-        reframe(year_change = pop[year == 2022] - pop[year == 2000])
-    }, digits = 0)
+  })
+  output$plot1 <- renderPlotly({
+    pop %>% 
+      filter(Country==input$country) %>%
+      ggplot(aes(x=year, y=pop)) +
+      geom_line(color="cornflowerblue") + geom_point(color="cornflowerblue") +
+      labs(x="Year", y="Population", title=paste0("Population in ", input$country))
+  })
+  
+  output$avg_pop <- renderTable({
+    pop %>% 
+      filter(Country==input$country) %>%
+      group_by(year) %>%
+      reframe(year_change = pop[year == 2022] - pop[year == 2000])
+  }, digits = 0)
   
   output$plot2<- renderPlotly({
     data %>% 
