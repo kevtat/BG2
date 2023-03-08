@@ -15,7 +15,7 @@ ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population"
                  tabPanel("Overview",
                           h1(strong("World Population Trends (2000-2022)")),
                  splitLayout(
-                   img(src = "https://nouvelles.umontreal.ca/fileadmin/_processed_/csm_20230125_demographique_8M_df2b84274b.jpg", width = "562px", height = "375px"),
+                   img(src = "csm_20230125_demographique_8M_df2b84274b.jpeg", width = "562px", height = "375px"),
                    div(
                      h3(strong("Applying Our Data")),
                      p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, and 2022."),
@@ -147,22 +147,6 @@ theme = shinytheme("lumen"),
 
 # Define server logic required to draw a histogram
 server <- function (input, output) {
-  output$wPlot <- renderPlot({
-    data$Country <- recode(data$Country,'United States' = 'USA',
-                           'United Kingdom' = 'UK', 
-                           'DR Congo' = 'Democratic Republic of the Congo',
-                           'Republic of the Congo' = 'Republic of Congo')
-    world_map <- map_data("world") %>% 
-      rename(Country = region)
-    new_map <- full_join(world_map, data, by = "Country")
-    ggplot(new_map, aes(long, lat, group = group)) +
-      geom_polygon(aes(fill = Growth_Rate), color="cornflowerblue") +
-      scale_fill_viridis_c(option = "C") +
-      theme(axis.title=element_blank(),
-            axis.text=element_blank(),
-            axis.ticks=element_blank())
-    
-  })
   output$plot1 <- renderPlotly({
     pop %>% 
       filter(Country==input$country) %>%
@@ -218,6 +202,23 @@ server <- function (input, output) {
       summarize(Area_in_km = sum(Area), Density_in_km = mean(Density)) %>%
       arrange(desc(Area_in_km)) %>% 
       head(10)
+  })
+  
+  output$wPlot <- renderPlot({
+    data$Country <- recode(data$Country,'United States' = 'USA',
+                           'United Kingdom' = 'UK', 
+                           'DR Congo' = 'Democratic Republic of the Congo',
+                           'Republic of the Congo' = 'Republic of Congo')
+    world_map <- map_data("world") %>% 
+      rename(Country = region)
+    new_map <- full_join(world_map, data, by = "Country")
+    ggplot(new_map, aes(long, lat, group = group)) +
+      geom_polygon(aes(fill = Growth_Rate), color="cornflowerblue") +
+      scale_fill_viridis_c(option = "C") +
+      theme(axis.title=element_blank(),
+            axis.text=element_blank(),
+            axis.ticks=element_blank())
+    
   })
 }
 # Create Shiny app ----
