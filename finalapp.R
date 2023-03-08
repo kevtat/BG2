@@ -13,17 +13,25 @@ pop <- data %>%
 
 ui <- navbarPage("Info 201 Group BG Final Project: Research of World Population",
                  tabPanel("Overview",
-                          h2(strong("World Population Trends from (2000-2022)")),
-                          p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, 2022."),
-                            "The purpose of our project is to examine trends or patterns in different continents in order to grasp how different
+                          h1(strong("World Population Trends (2000-2022)")),
+                 splitLayout(
+                   img(src = "https://nouvelles.umontreal.ca/fileadmin/_processed_/csm_20230125_demographique_8M_df2b84274b.jpg", width = "562px", height = "375px"),
+                   div(
+                     h3(strong("Applying Our Data")),
+                     p("Our final project utilizes data gathered by population from the years",em("2000, 2010, 2015, 2020, and 2022."),
+                       "The purpose of our project is to examine trends or patte
+                       rns in different continents in order to grasp how different
                             social, economic, and cultural differences contributed to a region's growth rate over the majority of the 21st century.
                             Our dataset, which we gathered from",strong(a("Kaggle.", href = "https://www.kaggle.com/datasets/iamsouravbanerjee/world-population-dataset")),
-                            "With this dataset, we were also able to ovserve trends in density by area for both the different countries and continents. Additionally,
-                            we observed current growth rate statistics for the world's population. Below is a map we plotted using the pakages ggplot, and tidyverse."),
-                          h2(strong("Why We Chose These Data")),
-                 p("The importance of studying world population is that population is a factor into other variables like the quality of life, growth rates, and 
-                            social changes. It will also allow us to make insightful prediction on future changes of growth rate and population for each individual country."),
-                 plotOutput("wPlot")
+                       "With this dataset, we were also able to observe trends in density by area for both the different countries and continents. Additionally,
+                            we observed current growth rate statistics for the world's population. To the left is a map we plotted using the pakages ggplot, and tidyverse."),
+                    h3(strong("Why We Chose These Data")),
+                    p("The importance of studying world population is that population is a factor into other variables like the quality of life, growth rates, and 
+                            social changes. It will also allow us to make insightful prediction on future changes of growth rate and population for each individual country.
+                            We believe that understanding trends over time in relation with current trends will help researchers predict changes in our world."),
+                   ),
+                 cellArgs = list(style='white-space: normal;')
+                   )
 ),
 tabPanel("Population Trend",
          sidebarLayout(
@@ -32,16 +40,28 @@ tabPanel("Population Trend",
            sidebarPanel(
              selectInput("country", "Select country:", 
                          choices = unique(pop$Country), selected = "China"),
+             h4("Top Ten Countries by Change in Population (2000-2022)"),
              tableOutput("avg_pop")
            ),
            
            # Main panel for displaying outputs
            mainPanel(
-             plotlyOutput(outputId = "plot1")
-             
+             plotlyOutput(outputId = "plot1"),
+             h4("Findings:"),
+             p("While most countries have experienced population growth over the past 22 years,",em("India and China"),
+               "Have experienced dramatically high grwoth in population, with",em("India")," experiencing dramatic growth of",
+               strong("3,357,539,498"),"in population."),
+             p("We believe that this general trend in population growth throughout the world is due to the improvement in quality
+               of life for many people. This includes access to life changing technology, medicine, and information. While there still
+               must be more work done in order to improve the lives of all human beings, our findings from this dataset reflect a very 
+               promising trend in the right direction. Our findings did; however, demonstrate reason to be concern of overpopulation"),
+             p("Although population growth in many countries has recently, and is expected to experience a decrease, it is nevertheless
+               concerning to see the extent of growth in countries such as",em("China and India,")," and if such growth may be possible 
+               in other countries")
            )
          )    
 ),
+
 
 tabPanel("Top 10 Countries by Population",
          sidebarLayout(
@@ -50,6 +70,7 @@ tabPanel("Top 10 Countries by Population",
            sidebarPanel(
              selectInput("continent", "Select continent:", 
                          choices = unique(data$Continent), selected = "Asia"),
+             h4("Top Ten Countries by Growth Rate (2022)"),
              tableOutput("growth_rate")
            ),
            
@@ -57,6 +78,18 @@ tabPanel("Top 10 Countries by Population",
            # Main panel for displaying outputs ----
            mainPanel(
              plotlyOutput(outputId = "plot2"),
+             h4("Findings:"),
+             p("According to our findings from the bar graph, the two largest countries by population in each continent are",em("China and India"),"in Asia, ",
+               em("Russia and Germany"),"in Europe, ",em("Nigeria and Ethiopia"),"in Africa, ", em("Australia and Papau New Guinea"),"in Oceania, ",
+               em("the United States and Mexico"),"in North America, and ",em("Brazil and Colombia"),"in South America.
+             Nevertheless, our findings are not reflective of the top ten countries experiencing the highest population growth rate in each continet"),
+             p("According to our findings from the table, the two countries experiencing the greatest population growth currently in each continent are",
+               em("Syria and Afghanistan"),"in Asia, ", em("Moldova and Poland"),"in Europe, ",em("Niger and DRC"),"in Africa, ", em("Vanuatu and Solomon Islands"),
+               "in Oceania, ",em("Honduras and Nicaragua"),"in North America, and ",em("French Guiana and Bolivia"),"in South America."),
+             p("While the findings from our table were frankly far from what we had anticipated, given the preported high current growth rate
+               in countries such as Syria, Afghanistan, and Moldova, it is clear that a population's size does not necessarily correlate to its growth rate.
+               In fact, many of the largest countries by population, are on a steady decline in population growth.")
+             
            )
          )    
 ),
@@ -68,18 +101,32 @@ tabPanel("Distribution of Population",
            sidebarPanel(
              
              selectInput("year", "Select year", 
-                         choices = unique(pop$year), selected = 2000)
+                         choices = unique(pop$year), selected = 2000),
+             h4("Top Ten Countries by Area in km2 and Their Respective Densities (2022)"),
+             tableOutput("density_by_area")
            ),
            
            # Main panel for displaying outputs ----
            mainPanel(
              plotlyOutput("plot3"),
+             h4("Findings:"),
+             p("The pie chart demonstrates that Asia has and still makes up the largest percentage of the global population.
+               However, as seen by changing the input for selected year, Asia has been on a very minor decline in representing
+               such a large portion of the global population over the past 22 years. On the other hand, Africa, which represents 17.9% of the
+               global population, as of 2022, has been on a steady rise in their representation of the total global population. These findings indicate
+               that Asia, is on a population decline, whereas Africa is on an incline. Europe and the Americas have also seen a fall in 
+               their representation of the total gloabl population."),
+             p("According to our table, population density is not reflective of a country's area size, as many countries, such as Australia have
+               a population density of 3.40, despite being ranked the 6th largest country by area. On the other hand, India, which is ranked the 7th
+               largest country by area, has a remarkably high density of 431.07.")
            )
          )    
 ),
 tabPanel("Summary",
          h2(strong("Our Findings/Analysis")),
-         p("According to our endeavors, one can observe that the world population continues to rise over the past 20 years.
+         splitLayout(
+           div(
+             p("According to our endeavors, one can observe that the world population continues to rise over the past 20 years.
                               Looking through the scope of the population growth rate as demonstrated earlier in the web app, one can quickly 
                               conclude that almost all countries in the world are showing positive population growth. We can attribute this 
                               positive population growth to the rapid modernization over the past 20 years. This is especially salient in 
@@ -89,11 +136,10 @@ tabPanel("Summary",
                               for the ggplot2 world map due to the missing values that it has. We could also incorporate a dataset that 
                               includes facets such as GDP, GDP per capita, and GDP growth, to fully visualize the socioeconomic advancements 
                               that the world has experienced over the last 20 years "),
-         splitLayout(
-           tableOutput("density_by_area"),
-           img(src = "https://nouvelles.umontreal.ca/fileadmin/_processed_/csm_20230125_demographique_8M_df2b84274b.jpg", width = "562px", height = "375px")
+           ),
+           plotOutput("wPlot"),
+           cellArgs = list(style='white-space: normal;')
          )
-         
 ),
 theme = shinytheme("lumen"),
 )
@@ -122,14 +168,16 @@ server <- function (input, output) {
       filter(Country==input$country) %>%
       ggplot(aes(x=year, y=pop)) +
       geom_line(color="cornflowerblue") + geom_point(color="cornflowerblue") +
-      labs(x="Year", y="Population", title=paste0("Population in ", input$country))
+      labs(x="Year", y="Population", title=paste0("Population in ", input$country," (2000-2022)"))
   })
   
   output$avg_pop <- renderTable({
-    pop %>% 
-      filter(Country==input$country) %>%
-      group_by(year) %>%
-      reframe(year_change = pop[year == 2022] - pop[year == 2000])
+    data %>% 
+      group_by(Country) %>% 
+      mutate(Difference = population_2022 - population_2000) %>% 
+      arrange(desc(Difference)) %>% 
+      select(Country, Difference) %>% 
+      head(10)
   }, digits = 0)
   
   output$plot2<- renderPlotly({
@@ -158,7 +206,7 @@ server <- function (input, output) {
       summarise(pop=sum(pop))
     fig <- plot_ly(df, labels = ~Continent, values = ~pop, type = 'pie')
     fig <- fig %>% 
-      layout(title = 'Distribution of Population in Each Continent',
+      layout(title = "Population Distribution",
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     fig
