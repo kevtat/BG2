@@ -119,7 +119,7 @@ tabPanel("Distribution of Population",
                global population, as of 2022, has been on a steady rise in their representation of the total global population. These findings indicate
                that Asia is on a population decline, whereas Africa is on an incline. Europe and the Americas have also seen a fall in 
                their representation of the total gloabl population. We found that Oceania occupies such as small percentage of the global population that
-               any change in representation of the total population is insignificant"),
+               any change in representation of the total population is insignificant."),
              p("According to our table, population density is not reflective of a country's area size, as many countries, such as Australia have
                a population density of 3.40, despite being ranked the 6th largest country by area. On the other hand, India, which is ranked the 7th
                largest country by area, has a notic high density of 431.07.")
@@ -131,7 +131,7 @@ tabPanel("Summary",
            # divided between heading and paragraph
            div(
              h2(strong("Our Findings/Analysis")),
-             h5(em("To the right is a map we plotted using the pakages ggplot, maps, and tidyverse.")),
+             h5(em(style="color:lightblue1","To the right is a map we plotted using the pakages ggplot, maps, and tidyverse.")),
              p("According to our endeavors, one can observe that the world population continues to rise over the past 20 years. Looking through the scope 
                of the population growth rate as demonstrated earlier in the web app, one can quickly conclude that almost all countries in the world are 
                showing positive population growth. We can attribute this positive population growth to the rapid modernization over the past 20 years. 
@@ -139,7 +139,7 @@ tabPanel("Summary",
                excellent for the most part--- with a few poorly named columns that we have to revise. Nonetheless, this dataset is unbiased and would not 
                harm certain population groups. In the future, we hope to find a replacement for the ggplot2 world map due to the missing values that it has. 
                We could also incorporate a dataset that includes facets such as GDP, GDP per capita, and GDP growth, to fully visualize the socioeconomic 
-               advancements that the world has experienced over the last 20 years"),
+               advancements that the world has experienced over the last 20 years."),
            ),
            # plot output of world population graph
            plotOutput("wPlot"),
@@ -147,7 +147,7 @@ tabPanel("Summary",
          )
 ),
 # uses package shiny theme
-theme = shinytheme("lumen"),
+theme = shinytheme("cerulean"),
 )
 
 
@@ -228,9 +228,12 @@ server <- function (input, output) {
       rename(Country = region)
     new_map <- full_join(world_map, data, by = "Country")
     ggplot(new_map, aes(long, lat, group = group)) +
-      geom_polygon(aes(fill = `World Population Percentage`), color="cornflowerblue") +
+      geom_polygon(aes(fill = `World Population Percentage`), color="gray") +
       scale_fill_gradient(name = "World Population Percentage", low = "lightblue1", high =  "navyblue")+
-      theme(axis.title=element_blank(),
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.title=element_blank(),
             axis.text=element_blank(),
             axis.ticks=element_blank())
   })
